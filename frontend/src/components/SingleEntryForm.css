@@ -1,0 +1,58 @@
+/* SingleEntryForm.css */
+
+.form-container {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f0f8f3; /* Adjust or remove this background color */
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.form-container form {
+  padding: 0; /* Remove extra padding */
+}
+
+.form-container form input[type="text"],
+.form-container form input[type="number"],
+.form-container form input[type="date"],
+.form-container form textarea,
+.form-container form button {
+  width: calc(100% - 20px); /* Adjust width to accommodate padding */
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-container form button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px; /* Add margin to separate buttons */
+}
+
+.form-container form button:hover {
+  background-color: #45a049;
+}
+
+/* Style for delete button */
+.form-container form button.delete-button {
+  background-color: #f44336; /* Red color */
+}
+
+.form-container form button.delete-button:hover {
+  background-color: #c62828; /* Darker red on hover */
+}
+
+.form-container form input[type="text"]:focus,
+.form-container form input[type="number"]:focus,
+.form-container form input[type="date"]:focus,
+.form-container form textarea:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}

@@ -1,0 +1,74 @@
+/* TalentVerifyUpdateCompanyForm.css */
+
+.update-company-form {
+  max-width: 600px;
+  margin: 20px auto; /* Added margin at the top and centered horizontally */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.update-company-form h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.update-company-form form {
+  display: grid;
+  gap: 15px; /* Increased gap between form elements */
+}
+
+.update-company-form .form-group {
+  position: relative;
+}
+
+.update-company-form label {
+  font-weight: bold;
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  transition: all 0.2s ease-out;
+  pointer-events: none;
+  color: #999; /* Default color for placeholders */
+}
+
+.update-company-form input,
+.update-company-form textarea {
+  width: calc(100% - 24px); /* Adjust width to account for padding and label position */
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+.update-company-form input:focus + label,
+.update-company-form textarea:focus + label,
+.update-company-form input:not(:placeholder-shown) + label,
+.update-company-form textarea:not(:placeholder-shown) + label {
+  top: -12px;
+  left: 12px;
+  font-size: 0.75rem;
+  color: #007bff; /* Color when active/focused */
+}
+
+.update-company-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.update-company-form button:hover {
+  background-color: #0056b3;
+}
+
+.update-company-form p {
+  margin-top: 10px;
+  font-size: 1rem;
+}

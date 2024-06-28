@@ -1,0 +1,88 @@
+/* Base styles for sidebar */
+.sidebar {
+  width: 250px;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: #222;
+  overflow-x: hidden;
+  padding-top: 20px;
+  transition: 0.3s; /* Smooth transition for opening/closing */
+}
+
+.sidebar-nav {
+  padding: 0;
+  list-style-type: none;
+}
+
+.sidebar-nav li {
+  padding: 10px;
+}
+
+.sidebar-nav li a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+.sidebar-nav li a:hover {
+  background-color: #555;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    display: none; /* Hide sidebar by default */
+  }
+  .sidebar.active {
+    display: block; /* Show sidebar when active */
+  }
+  .sidebar-nav li {
+    text-align: center;
+    padding: 15px;
+  }
+}
+
+/* Media query for very small screens */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding-top: 0;
+    display: none; /* Hide sidebar by default */
+  }
+  .sidebar.active {
+    display: block; /* Show sidebar when active */
+  }
+  .sidebar-nav li {
+    text-align: center;
+    padding: 10px;
+  }
+}
+
+/* Button to open/close sidebar */
+.sidebar-toggle {
+  display: none; /* Hide by default */
+}
+
+/* Show button on smaller screens */
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background-color: #222;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+  }
+}

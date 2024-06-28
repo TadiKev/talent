@@ -1,0 +1,21 @@
+/* src/components/EmployeeList.css */
+
+h2 {
+    text-align: center;
+    color: #4caf50;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #4caf50;
+    border-radius: 4px;
+    background-color: #f0f8f5;
+    color: #2e7d32;
+  }
+  
