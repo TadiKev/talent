@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './TalentVerifyUpdateCompanyForm.css';
 
 const TalentVerifyUpdateCompanyForm = () => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     name: '',
     registration_date: '',
     registration_number: '',
@@ -11,31 +11,11 @@ const TalentVerifyUpdateCompanyForm = () => {
     contact_person: '',
     contact_phone: '',
     email: '',
-    company_id: null
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    // Fetch company data if company_id is provided initially (for update scenario)
-    if (formData.company_id) {
-      fetchCompanyData();
-    }
-  }, [formData.company_id]);
-
-  const fetchCompanyData = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8000/api/companies/${formData.company_id}/`);
-      const companyData = response.data;
-      setFormData({
-        ...companyData,
-        company_id: companyData.id
-      });
-    } catch (error) {
-      console.error('Error fetching company data:', error);
-      setError('Failed to fetch company data');
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,18 +23,9 @@ const TalentVerifyUpdateCompanyForm = () => {
       const response = await axios.post('http://localhost:8000/api/save-or-update-company/', formData);
 
       console.log('Response:', response.data);
-      setMessage(formData.company_id ? 'Company updated successfully' : 'Company added successfully');
+      setMessage(formData.id ? 'Company updated successfully' : 'Company added successfully');
       setError('');
-      setFormData({
-        name: '',
-        registration_date: '',
-        registration_number: '',
-        address: '',
-        contact_person: '',
-        contact_phone: '',
-        email: '',
-        company_id: response.data.company_id || null
-      });
+      setFormData(initialFormData); // Reset form fields after successful submission
     } catch (error) {
       console.error('Failed to submit company:', error);
       setMessage('');
@@ -69,39 +40,9 @@ const TalentVerifyUpdateCompanyForm = () => {
     });
   };
 
-  const handleDelete = async () => {
-    if (!formData.company_id) {
-      alert('No company selected to delete.');
-      return;
-    }
-
-    try {
-      const response = await axios.delete(
-        `http://localhost:8000/api/companies/${formData.company_id}/`
-      );
-
-      console.log('Company deleted:', response.data);
-      setMessage('Company deleted successfully!');
-      setError('');
-      setFormData({
-        name: '',
-        registration_date: '',
-        registration_number: '',
-        address: '',
-        contact_person: '',
-        contact_phone: '',
-        email: '',
-        company_id: null
-      });
-    } catch (error) {
-      console.error('Error deleting company:', error.response?.data);
-      setError('Error deleting company!');
-    }
-  };
-
   return (
     <div className="update-company-form">
-      <h2>{formData.company_id ? 'Update Company Information' : 'Add New Company'}</h2>
+      <h2>{formData.id ? 'Update Company Information' : 'Add New Company'}</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <input
@@ -178,10 +119,7 @@ const TalentVerifyUpdateCompanyForm = () => {
           />
           <label>Email</label>
         </div>
-        <button type="submit">{formData.company_id ? 'Update Company' : 'Add Company'}</button>
-        {formData.company_id && (
-          <button type="button" onClick={handleDelete}>Delete Company</button>
-        )}
+        <button type="submit">{formData.id ? 'Update Company' : 'Add Company'}</button>
       </form>
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}

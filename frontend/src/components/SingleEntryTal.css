@@ -1,4 +1,4 @@
-/* src/App.css */
+/* src/components/SingleEntryForm.css */
 
 body {
     font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@ form {
     padding: 20px;
     margin: 20px auto;
     border-radius: 8px;
-    max-width: 600px;
+    max-width: 800px; /* Increased the width */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -34,7 +34,7 @@ form textarea {
 }
 
 form button {
-    background-color: #007bff;
+    background-color: #28a745; /* Changed to green */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -45,7 +45,7 @@ form button {
 }
 
 form button:hover {
-    background-color: #0056b3;
+    background-color: #218838; /* Darker green on hover */
 }
 
 h2 {

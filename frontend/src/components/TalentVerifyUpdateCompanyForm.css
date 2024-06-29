@@ -36,7 +36,7 @@
 .update-company-form input,
 .update-company-form textarea {
   width: calc(100% - 24px); /* Adjust width to account for padding and label position */
-  padding: 10px;
+  padding: 15px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -51,11 +51,11 @@
   top: -12px;
   left: 12px;
   font-size: 0.75rem;
-  color: #007bff; /* Color when active/focused */
+  color: green; /* Color when active/focused */
 }
 
 .update-company-form button {
-  background-color: #007bff;
+  background-color: green;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -65,7 +65,7 @@
 }
 
 .update-company-form button:hover {
-  background-color: #0056b3;
+  background-color: green;
 }
 
 .update-company-form p {
