@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './EmployeeSearchForm.css'; // Import CSS file
+import './EmployeeSearchForm.css'; 
 
 const EmployeeSearch = () => {
   const [searchParams, setSearchParams] = useState({

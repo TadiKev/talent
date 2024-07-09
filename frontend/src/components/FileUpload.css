@@ -1,32 +1,17 @@
-/* src/components/FileUploadComponent.css */
-
-.file-upload-container {
-    max-width: 600px;
-    margin: 20px auto; /* Adjusted margin-top */
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: white;
-}
-
-.file-upload-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.file-upload-input {
-    margin-bottom: 10px;
-}
-
-.file-upload-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.file-upload-button:hover {
-    background-color: #0056b3;
-}
+.file-upload-container.upload-employee {
+    background-color: #f4f4f4;
+  }
+  
+  .file-upload-title.upload-employee {
+    color: green;
+  }
+  
+  .file-upload-button.upload-employee {
+    background-color: green;
+    color: white;
+  }
+  
+  .file-upload-button.upload-employee:hover {
+    background-color: blue;
+  }
+  

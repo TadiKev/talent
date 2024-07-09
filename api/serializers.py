@@ -12,16 +12,16 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'registration_date', 'registration_number', 'address', 'contact_person', 'contact_phone', 'email']
 
     def get_address(self, obj):
-        return obj.get_address()
+        return obj.address
 
     def get_contact_person(self, obj):
-        return obj.get_contact_person()
+        return obj.contact_person
 
     def get_contact_phone(self, obj):
-        return obj.get_contact_phone()
+        return obj.contact_phone
 
     def get_email(self, obj):
-        return obj.get_email()
+        return obj.email
 
 class DepartmentSerializer(serializers.ModelSerializer):
     company = CompanySerializer()
@@ -38,24 +38,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'employee_id', 'department', 'role', 'start_date', 'end_date', 'duties']
 
     def get_duties(self, obj):
-        return obj.get_duties()
+        return obj.duties
 
 class EmployeeHistorySerializer(serializers.ModelSerializer):
-    duties = serializers.SerializerMethodField()
-
     class Meta:
         model = EmployeeHistory
-        fields = ['id', 'employee', 'start_date', 'end_date', 'role', 'duties']
-
-    def get_duties(self, obj):
-        return obj.get_duties()
-
-# api/serializers.py
-
-from rest_framework import serializers
-from .models import Employee
-
-class EmployeeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Employee
         fields = '__all__'

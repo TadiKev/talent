@@ -38,6 +38,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     
     
+    
 ]
 
 ROOT_URLCONF = 'talent_verify.urls'
@@ -141,6 +142,7 @@ CRYPTO_BACKEND = 'django_encrypted_fields.backends.CryptoBackend'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 CSRF_COOKIE_HTTPONLY = False
 

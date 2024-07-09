@@ -1,28 +1,65 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom'; // Import Navigate from react-router-dom
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import axios from 'axios';
+import { AuthProvider, useAuth } from './AuthContext'; // Import your authentication context
+import Sidebar from './components/Sidebar';
+import TalentVerifyDashboard from './components/TalentVerifyDashboard';
+import CompanyUserDashboard from './components/CompanyUserDashboard';
 import EmployeeForm from './components/SingleEntryForm';
-import EmployeeList from './components/EmployeeList';
 import FileUpload from './components/FileUpload';
 import EmployeeSearchForm from './components/EmployeeSearchForm';
 import TalentVerifyUpdateCompanyForm from './components/TalentVerifyUpdateCompanyForm';
 import TalentVerifyBulkUpdateForm from './components/TalentVerifyBulkUpdateForm';
 import LoginForm from './components/LoginForm';
 import SignUpForm from './components/SignUpForm';
-import Sidebar from './components/Sidebar'; // Assuming Sidebar.js exists in './components'
-import UserRoleManagement from './components/UserRoleManagement'; // Import UserRoleManagement component
-import './App.css'; // Import global styles
+import './App.css';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isLoading } = useAuth(); // Assuming useAuth provides user object
 
-  const handleLoginSuccess = () => {
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+  }, []);
+
+  const handleLoginSuccess = (role) => {
     setIsLoggedIn(true);
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userRole', role); // Store the user role
+    // Redirect to the appropriate dashboard based on role
+    if (role === 'talent_verify') {
+      window.location.href = '/talent-verify-dashboard';
+    } else if (role === 'company_user') {
+      window.location.href = '/company-user-dashboard';
+    }
   };
 
   const handleSignUpSuccess = () => {
-    setIsLoggedIn(false); // Ensure user is logged out after signup
-    return <Navigate to="/login" />; // Redirect to login page
+    setIsLoggedIn(true); // Assuming signup also logs the user in
+    localStorage.setItem('isLoggedIn', 'true');
+    return <Navigate to="/" />;
   };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:8000/api/logout/', null, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      setIsLoggedIn(false);
+      localStorage.setItem('isLoggedIn', 'false');
+      localStorage.removeItem('userRole'); // Remove user role on logout
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>
@@ -30,20 +67,20 @@ const App = () => {
         {!isLoggedIn ? (
           <Routes>
             <Route path="/signup" element={<SignUpForm onSuccess={handleSignUpSuccess} />} />
-            <Route path="*" element={<LoginForm onLogin={handleLoginSuccess} />} />
+            <Route path="/" element={<LoginForm onLogin={handleLoginSuccess} />} />
           </Routes>
         ) : (
           <>
-            <Sidebar /> {/* Render Sidebar component */}
+            <Sidebar onLogout={handleLogout} userRole={user ? user.role : localStorage.getItem('userRole')} /> {/* Passing userRole prop */}
             <div className="main-content">
               <Routes>
                 <Route path="/company/add-employee" element={<EmployeeForm />} />
-                <Route path="/company/employees" element={<EmployeeList />} />
                 <Route path="/company/upload" element={<FileUpload />} />
                 <Route path="/company/search-employees" element={<EmployeeSearchForm />} />
                 <Route path="/talent-verify/update-company" element={<TalentVerifyUpdateCompanyForm />} />
                 <Route path="/talent-verify/bulk-update" element={<TalentVerifyBulkUpdateForm />} />
-                <Route path="/user-role-management" element={<UserRoleManagement />} /> {/* Add UserRoleManagement route */}
+                <Route path="/talent-verify-dashboard" element={<TalentVerifyDashboard />} />
+                <Route path="/company-user-dashboard" element={<CompanyUserDashboard />} />
                 <Route path="/" element={<Home />} />
               </Routes>
             </div>
@@ -57,16 +94,27 @@ const App = () => {
 const Home = () => (
   <div className="home-content">
     <h2>Welcome to Talent Verify</h2>
-    <ul>
-      <li><Link to="/company/add-employee">Add Employee</Link></li>
-      <li><Link to="/company/employees">Employee List</Link></li>
-      <li><Link to="/company/upload">Upload Employee Data</Link></li>
-      <li><Link to="/company/search-employees">Search Employees</Link></li>
-      <li><Link to="/talent-verify/update-company">Update Company</Link></li>
-      <li><Link to="/talent-verify/bulk-update">Bulk Update</Link></li>
-      <li><Link to="/user-role-management">User Role Management</Link></li> {/* Add link to UserRoleManagement */}
-    </ul>
+    <p>
+      Talent Verify is an online talent verification service designed to streamline the process of verifying 
+      employee information for companies. Our platform allows employers to provide comprehensive details 
+      about their company and employees, ensuring accurate and up-to-date records.
+    </p>
+
+    <p>
+      Our platform supports both bulk upload and single entries of all or part of employee or company 
+      information. Keep track of employee history as they progress within the company or move to different 
+      companies.
+    </p>
+    <p>
+      Use the links below to navigate through the various functionalities of Talent Verify:
+    </p>
   </div>
 );
 
-export default App;
+const AppContainer = () => (
+  <AuthProvider> {/* Assuming AuthProvider wraps your App */}
+    <App />
+  </AuthProvider>
+);
+
+export default AppContainer;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TalentVerifyUpdateCompanyForm.css';
 
@@ -16,20 +16,67 @@ const TalentVerifyUpdateCompanyForm = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
+
+  useEffect(() => {
+    const getCsrfToken = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/csrf-token/', { withCredentials: true });
+        setCsrfToken(response.data.csrfToken);
+      } catch (error) {
+        console.error('Failed to fetch CSRF token:', error);
+      }
+    };
+
+    getCsrfToken();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/save-or-update-company/', formData);
-
+      const response = await axios.post(
+        'http://localhost:8000/api/save-or-update-company/',
+        formData,
+        { headers: { 'X-CSRFToken': csrfToken }, withCredentials: true }
+      );
       console.log('Response:', response.data);
-      setMessage(formData.id ? 'Company updated successfully' : 'Company added successfully');
+      setMessage(formData.registration_number ? 'Company updated successfully' : 'Company added successfully');
       setError('');
       setFormData(initialFormData); // Reset form fields after successful submission
     } catch (error) {
       console.error('Failed to submit company:', error);
       setMessage('');
       setError(error.response?.data?.error || 'Failed to submit company');
+    }
+  };
+
+  const handleFetch = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/company/${formData.registration_number}/`, { withCredentials: true });
+      setFormData(response.data);
+      setMessage('Company fetched successfully');
+      setError('');
+    } catch (error) {
+      console.error('Failed to fetch company:', error);
+      setMessage('');
+      setError(error.response?.data?.error || 'Failed to fetch company');
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/api/delete-company/${formData.registration_number}/`,
+        { headers: { 'X-CSRFToken': csrfToken }, withCredentials: true }
+      );
+      console.log('Response:', response.data);
+      setMessage('Company deleted successfully');
+      setError('');
+      setFormData(initialFormData); // Reset form fields after successful deletion
+    } catch (error) {
+      console.error('Failed to delete company:', error);
+      setMessage('');
+      setError(error.response?.data?.error || 'Failed to delete company');
     }
   };
 
@@ -42,7 +89,7 @@ const TalentVerifyUpdateCompanyForm = () => {
 
   return (
     <div className="update-company-form">
-      <h2>{formData.id ? 'Update Company Information' : 'Add New Company'}</h2>
+      <h2>{formData.registration_number ? 'Update Company Information' : 'Add New Company'}</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <input
@@ -119,7 +166,9 @@ const TalentVerifyUpdateCompanyForm = () => {
           />
           <label>Email</label>
         </div>
-        <button type="submit">{formData.id ? 'Update Company' : 'Add Company'}</button>
+        <button type="submit">{formData.registration_number ? 'Update Company' : 'Add Company'}</button>
+        <button type="button" onClick={handleFetch}>Fetch Company</button>
+        <button type="button" onClick={handleDelete}>Delete Company</button>
       </form>
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}

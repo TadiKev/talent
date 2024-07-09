@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import './SignUpForm.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import { useNavigate } from 'react-router-dom';
 
 const SignUpForm = ({ onSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Initialize useNavigate hook
+    const navigate = useNavigate();
 
     const axiosInstance = axios.create({
         baseURL: 'http://localhost:8000',
@@ -19,39 +19,62 @@ const SignUpForm = ({ onSuccess }) => {
     });
 
     axiosInstance.interceptors.request.use(config => {
-        const csrftoken = getCookie('csrftoken');
-        if (csrftoken) {
-            config.headers['X-CSRFToken'] = csrftoken;
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     });
 
-    function getCookie(name) {
-        const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-        return cookieValue ? cookieValue.pop() : '';
-    }
+    const handleSignUp = async (event) => {
+        event.preventDefault();
 
-    const handleSignUp = async () => {
         try {
-            const response = await axiosInstance.post('/api/signup/', { username, password, email });
-            console.log('Sign-up response:', response.data);
-            onSuccess(); // Call onSuccess callback if needed
-            navigate('/login'); // Redirect to login page
+            await axiosInstance.post('/api/signup/', {
+                username,
+                password,
+                email,
+            });
+
+            onSuccess();
+            navigate('/'); // Redirect to root '/' after successful signup
         } catch (error) {
-            console.error('Sign-up error:', error);
-            setError('Failed to sign up. Please try again.');
+            console.error('Signup error:', error);
+            if (error.response && error.response.data) {
+                setError(error.response.data.detail || 'Failed to sign up. Please check your details.');
+            } else {
+                setError('Failed to sign up. Please check your details.');
+            }
         }
     };
 
     return (
         <div className="signup-container">
-            <form className="signup-form">
+            <form className="signup-form" onSubmit={handleSignUp}>
                 <h2>Sign Up</h2>
-                <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
                 {error && <p className="error-message">{error}</p>}
-                <button type="button" onClick={handleSignUp}>Sign Up</button>
+                <button type="submit">Sign Up</button>
             </form>
         </div>
     );

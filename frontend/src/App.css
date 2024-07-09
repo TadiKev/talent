@@ -7,7 +7,7 @@
 
 .sidebar {
   width: 250px;
-  background-color: #333;
+  background-color: green;
   color: #fff;
   padding: 20px;
 }
@@ -29,10 +29,56 @@
 .main-content {
   flex: 1;
   padding: 20px;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
 }
 
 .home-content {
   padding: 20px;
+  text-align: center; /* Center text */
+  max-width: 600px; /* Restrict the width of the content */
+  margin: 0 auto; /* Center the content container */
+}
+
+.home-content p {
+  text-align: justify; /* Justify paragraph text */
+  margin-bottom: 20px; /* Space between paragraphs */
+  color: blue;
+}
+
+.home-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.home-content li {
+  margin-bottom: 10px;
+}
+
+.home-content a {
+  color: green;
+  text-decoration: none;
+}
+
+.home-content a:hover {
+  text-decoration: underline;
 }
 
 /* Adjust other styles as needed */
+
+/* Media Query for responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+  
+  .main-content {
+    padding: 15px;
+  }
+  
+  .home-content {
+    padding: 10px;
+    max-width: 100%; /* Allow full width on smaller screens */
+  }
+}

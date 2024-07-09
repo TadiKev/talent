@@ -1,21 +1,29 @@
 from rest_framework import status, generics, viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 from django.http import JsonResponse, Http404
 from django.middleware.csrf import get_token
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
-from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model, authenticate, login as auth_login, logout as auth_logout
-from .models import Employee, Company
-from .serializers import EmployeeSerializer
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from rest_framework import status
+from .permissions import IsTalentAdmin, IsCompanyUser, IsCompanyUserOrReadOnly
+from django.contrib.auth.decorators import login_required
+
+from .models import Employee, Company, EmployeeHistory
+from .serializers import EmployeeSerializer, EmployeeHistorySerializer
+
 import csv
 import pandas as pd
 import json
-from .permissions import IsTalentAdmin, IsCompanyUser, IsCompanyUserOrReadOnly
-from rest_framework.decorators import permission_classes
+
 
 
 class EmployeeCreateView(APIView):
@@ -166,92 +174,80 @@ def bulk_company_upload(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views.generic.base import View
-from rest_framework import status, permissions
 
+# views.py
+
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 from .models import Company
 import json
 
-@method_decorator(csrf_exempt, name='dispatch')
-class SaveOrUpdateCompanyView(View):
-    permission_classes = [permissions.IsAuthenticated, IsCompanyUser] 
-
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            company_id = data.get('company_id', None)
-
-            if company_id:
-                company = Company.objects.get(id=company_id)
-                company.name = data['name']
-                company.registration_date = data['registration_date']
-                company.registration_number = data['registration_number']
-                company.address = data['address']
-                company.contact_person = data['contact_person']
-                company.contact_phone = data['contact_phone']
-                company.email = data['email']
-                company.save()
-                return JsonResponse({'message': 'Company updated successfully'}, status=status.HTTP_200_OK)
-            else:
-                company = Company.objects.create(
-                    name=data['name'],
-                    registration_date=data['registration_date'],
-                    registration_number=data['registration_number'],
-                    address=data['address'],
-                    contact_person=data['contact_person'],
-                    contact_phone=data['contact_phone'],
-                    email=data['email']
-                )
-                return JsonResponse({'message': 'Company created successfully', 'company_id': company.id}, status=status.HTTP_201_CREATED)
-        except Company.DoesNotExist:
-            return JsonResponse({'error': 'Company not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated, IsCompanyUserOrReadOnly])
-def get_company_id(request):
-    try:
-        company = Company.objects.latest('id')
-        return JsonResponse({'companyId': company.id})
-    except Company.DoesNotExist:
-        return JsonResponse({'companyId': None})
+@ensure_csrf_cookie
+def csrf_token(request):
+    return JsonResponse({'csrfToken': get_token(request)})
 
 @csrf_exempt
-@require_http_methods(["PUT"])
-@permission_classes([permissions.IsAuthenticated, IsCompanyUser])
-def update_company_raw(request, companyId):
+@require_http_methods(["POST"])
+def save_or_update_company(request):
     try:
-        company = Company.objects.get(id=companyId)
         data = json.loads(request.body)
-        company.name = data.get('name', company.name)
-        company.registration_date = data.get('registration_date', company.registration_date)
-        company.registration_number = data.get('registration_number', company.registration_number)
-        company.address = data.get('address', company.address)
-        company.contact_person = data.get('contact_person', company.contact_person)
-        company.contact_phone = data.get('contact_phone', company.contact_phone)
-        company.email = data.get('email', company.email)
+        registration_number = data.get('registration_number')
+        
+        if registration_number:
+            company = Company.objects.get(registration_number=registration_number)
+        else:
+            company = Company()
+
+        company.name = data.get('name')
+        company.registration_date = data.get('registration_date')
+        company.registration_number = data.get('registration_number')
+        company.address = data.get('address')
+        company.contact_person = data.get('contact_person')
+        company.contact_phone = data.get('contact_phone')
+        company.email = data.get('email')
         company.save()
-        return JsonResponse({'message': 'Company updated successfully', 'companyId': company.id})
+
+        return JsonResponse({'message': 'Company saved successfully'})
     except Company.DoesNotExist:
-        return JsonResponse({'error': 'Company not found'}, status=status.HTTP_404_NOT_FOUND)
+        return HttpResponseBadRequest('Company does not exist')
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return HttpResponseBadRequest(str(e))
+
+@ensure_csrf_cookie
+@require_http_methods(["GET"])
+def get_company(request, registration_number):
+    try:
+        company = Company.objects.get(registration_number=registration_number)
+        data = {
+            'name': company.name,
+            'registration_date': company.registration_date,
+            'registration_number': company.registration_number,
+            'address': company.address,
+            'contact_person': company.contact_person,
+            'contact_phone': company.contact_phone,
+            'email': company.email,
+        }
+        return JsonResponse(data)
+    except Company.DoesNotExist:
+        return HttpResponseBadRequest('Company does not exist')
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_company(request, registration_number):
+    try:
+        company = Company.objects.get(registration_number=registration_number)
+        company.delete()
+        return JsonResponse({'message': 'Company deleted successfully'})
+    except Company.DoesNotExist:
+        return HttpResponseBadRequest('Company does not exist')
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))
 
 
-from django.contrib.auth import get_user_model, authenticate, login as auth_login, logout as auth_logout
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.middleware.csrf import get_token
-from rest_framework import status
-import json
 
 # Get the custom User model
 CustomUser = get_user_model()
@@ -290,7 +286,6 @@ def signup(request):
 
     return JsonResponse({'error': 'Only POST requests are allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-# Login view
 @csrf_exempt
 def login(request):
     if request.method == 'POST':
@@ -306,7 +301,8 @@ def login(request):
 
             if user is not None:
                 auth_login(request, user)
-                return JsonResponse({'message': 'Login successful', 'role': 'admin' if user.is_superuser else 'user'})
+                role = 'talent_verify' if user.is_talent_admin else 'is_company_user'
+                return JsonResponse({'message': 'Login successful', 'role': role})
             else:
                 return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -315,35 +311,48 @@ def login(request):
 
     return JsonResponse({'error': 'Only POST requests are allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+
 # Logout view
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
+def get_csrf_token(request):
+    token = get_token(request)
+    return JsonResponse({'csrfToken': token})
+
 @csrf_exempt
-def logout(request):
+def logout_view(request):
     if request.method == 'POST':
-        auth_logout(request)
-        return JsonResponse({'message': 'Logout successful'})
+        logout(request)
+        return JsonResponse({'message': 'Logged out successfully'}, status=200)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-    return JsonResponse({'error': 'Only POST requests are allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-# Check authentication status
 def check_auth(request):
     if request.user.is_authenticated:
-        role = 'admin' if request.user.is_superuser else 'user'
+        role = 'talent_verify' if request.user.is_talent_admin else 'is_company_user'
         return JsonResponse({'authenticated': True, 'role': role})
     else:
         return JsonResponse({'authenticated': False})
+
 
 # View to get CSRF token
 def csrf_token(request):
     return JsonResponse({'csrfToken': get_token(request)})
 
 
-# api/views.py
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .models import Employee
-from .serializers import EmployeeSerializer
-from django.http import Http404
+# views.py
+
+
+
+class EmployeeHistoryListAPIView(generics.ListAPIView):
+    queryset = EmployeeHistory.objects.all()
+    serializer_class = EmployeeHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        employee_id = self.kwargs['employee_id']
+        return EmployeeHistory.objects.filter(employee_id=employee_id)
+
 
 class EmployeeDetail(APIView):
     """
@@ -353,15 +362,20 @@ class EmployeeDetail(APIView):
         try:
             return Employee.objects.get(pk=pk)
         except Employee.DoesNotExist:
-            raise Http404
+            raise Http404("Employee does not exist")
 
     def get(self, request, pk, format=None):
-        employee = self.get_object(pk)
-        serializer = EmployeeSerializer(employee)
-        return Response(serializer.data)
+        try:
+            employee = self.get_object(pk)
+            serializer = EmployeeSerializer(employee)
+            return Response(serializer.data)
+        except Http404 as e:
+            return Response(str(e), status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk, format=None):
-        employee = self.get_object(pk)
-        employee.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+        try:
+            employee = self.get_object(pk)
+            employee.delete()
+            return Response({'message': 'Employee deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Http404 as e:
+            return Response(str(e), status=status.HTTP_404_NOT_FOUND)

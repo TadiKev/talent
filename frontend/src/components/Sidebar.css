@@ -37,11 +37,16 @@
   .sidebar {
     width: 100%;
     height: auto;
-    position: relative;
-    display: none; /* Hide sidebar by default */
+    position: fixed;
+    top: 0;
+    left: -250px; /* Off-screen by default */
+    background-color: #222;
+    overflow-x: hidden;
+    padding-top: 20px;
+    transition: 0.3s;
   }
   .sidebar.active {
-    display: block; /* Show sidebar when active */
+    left: 0; /* Slide in when active */
   }
   .sidebar-nav li {
     text-align: center;
@@ -54,12 +59,16 @@
   .sidebar {
     width: 100%;
     height: auto;
-    position: relative;
-    padding-top: 0;
-    display: none; /* Hide sidebar by default */
+    position: fixed;
+    top: 0;
+    left: -250px; /* Off-screen by default */
+    background-color: #222;
+    overflow-x: hidden;
+    padding-top: 20px;
+    transition: 0.3s;
   }
   .sidebar.active {
-    display: block; /* Show sidebar when active */
+    left: 0; /* Slide in when active */
   }
   .sidebar-nav li {
     text-align: center;

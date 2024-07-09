@@ -35,7 +35,7 @@ const SingleEntryForm = () => {
     const { name, value } = e.target;
     setEmployeeData({
       ...employeeData,
-      [name]: value
+      [name]: value || ''
     });
   };
 
@@ -139,14 +139,14 @@ const SingleEntryForm = () => {
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit}>
-        <input type="text" name="name" value={employeeData.name} onChange={handleChange} placeholder="Name" required />
-        <input type="text" name="employee_id" value={employeeData.employee_id} onChange={handleChange} placeholder="Employee ID" required />
-        <input type="number" name="department" value={employeeData.department} onChange={handleChange} placeholder="Department ID" required />
-        <input type="text" name="role" value={employeeData.role} onChange={handleChange} placeholder="Role" required />
-        <input type="date" name="start_date" value={employeeData.start_date} onChange={handleChange} placeholder="Start Date" required />
-        <input type="date" name="end_date" value={employeeData.end_date} onChange={handleChange} placeholder="End Date" />
-        <textarea name="duties" value={employeeData.duties} onChange={handleChange} placeholder="Duties" required></textarea>
-        <input type="text" name="company" value={employeeData.company} onChange={handleChange} placeholder="Company" required />
+        <input type="text" name="name" value={employeeData.name || ''} onChange={handleChange} placeholder="Name" required />
+        <input type="text" name="employee_id" value={employeeData.employee_id || ''} onChange={handleChange} placeholder="Employee ID" required />
+        <input type="number" name="department" value={employeeData.department || ''} onChange={handleChange} placeholder="Department ID" required />
+        <input type="text" name="role" value={employeeData.role || ''} onChange={handleChange} placeholder="Role" required />
+        <input type="date" name="start_date" value={employeeData.start_date || ''} onChange={handleChange} placeholder="Start Date" required />
+        <input type="date" name="end_date" value={employeeData.end_date || ''} onChange={handleChange} placeholder="End Date" />
+        <textarea name="duties" value={employeeData.duties || ''} onChange={handleChange} placeholder="Duties" required></textarea>
+        <input type="text" name="company" value={employeeData.company || ''} onChange={handleChange} placeholder="Company" required />
         <button type="submit">Add Employee</button>
         <button type="button" onClick={fetchEmployeeById}>Fetch Employee Data</button>
         {employeeData.id && (
@@ -156,5 +156,5 @@ const SingleEntryForm = () => {
     </div>
   );
 };
-
+     
 export default SingleEntryForm;

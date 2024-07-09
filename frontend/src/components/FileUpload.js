@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './FileUpload.css'; // Import your external CSS file
+import './sharedStyles.css'; // Import shared styles
+import './FileUpload.css'; // Import unique styles for this component
 import axios from 'axios';
-
 
 const FileUploadComponent = () => {
     const [file, setFile] = useState(null);
@@ -58,33 +58,14 @@ const FileUploadComponent = () => {
         }
     };
 
-    // Inline styles for success and error messages
-    const successStyle = {
-        color: 'green',
-        backgroundColor: '#d4edda',
-        border: '1px solid #c3e6cb',
-        padding: '10px',
-        borderRadius: '5px',
-        marginTop: '20px',
-    };
-
-    const errorStyle = {
-        color: 'red',
-        backgroundColor: '#f8d7da',
-        border: '1px solid #f5c6cb',
-        padding: '10px',
-        borderRadius: '5px',
-        marginTop: '20px',
-    };
-
     return (
-        <div className="file-upload-container">
-            <h2 className="file-upload-title">Upload Employee Information</h2>
+        <div className="file-upload-container upload-employee">
+            <h2 className="file-upload-title upload-employee">Upload Employee Information</h2>
             <input className="file-upload-input" type="file" onChange={handleFileChange} />
-            <button className="file-upload-button" onClick={handleUpload}>Upload</button>
+            <button className="file-upload-button upload-employee" onClick={handleUpload}>Upload</button>
             {/* Display success or error message if available */}
             {message && (
-                <div style={isError ? errorStyle : successStyle}>
+                <div className={`message ${isError ? 'error' : 'success'}`}>
                     {message}
                 </div>
             )}

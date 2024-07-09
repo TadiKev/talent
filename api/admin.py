@@ -1,10 +1,8 @@
 from django.contrib import admin
-from .models import Company, Department, Employee, EmployeeHistory
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import Company, Department, Employee, EmployeeHistory, CustomUser
 
-# Register your models here.
-
+# Custom admin classes for other models
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ('name', 'registration_date', 'registration_number', 'contact_person', 'email')
@@ -29,11 +27,20 @@ class EmployeeHistoryAdmin(admin.ModelAdmin):
     list_filter = ('employee__name', 'role', 'start_date', 'end_date')
     search_fields = ('employee__name', 'role')
 
-
-
+# Custom User Admin without logging
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         (None, {'fields': ('is_talent_admin', 'is_company_user')}),
     )
 
+    def log_addition(self, request, object, message):
+        pass  # Disable logging for additions
+
+    def log_change(self, request, object, message):
+        pass  # Disable logging for changes
+
+    def log_deletion(self, request, object, object_repr):
+        pass  # Disable logging for deletions
+
+# Register CustomUserAdmin
 admin.site.register(CustomUser, CustomUserAdmin)
