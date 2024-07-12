@@ -175,18 +175,11 @@ def bulk_company_upload(request):
         return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# views.py
-
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
-from django.middleware.csrf import get_token
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Company
 import json
-
-@ensure_csrf_cookie
-def csrf_token(request):
-    return JsonResponse({'csrfToken': get_token(request)})
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -194,26 +187,39 @@ def save_or_update_company(request):
     try:
         data = json.loads(request.body)
         registration_number = data.get('registration_number')
-        
-        if registration_number:
-            company = Company.objects.get(registration_number=registration_number)
-        else:
-            company = Company()
 
-        company.name = data.get('name')
-        company.registration_date = data.get('registration_date')
-        company.registration_number = data.get('registration_number')
-        company.address = data.get('address')
-        company.contact_person = data.get('contact_person')
-        company.contact_phone = data.get('contact_phone')
-        company.email = data.get('email')
-        company.save()
+        if not registration_number:
+            return HttpResponseBadRequest('Registration number is required')
 
-        return JsonResponse({'message': 'Company saved successfully'})
-    except Company.DoesNotExist:
-        return HttpResponseBadRequest('Company does not exist')
+        # Check if company with this registration number already exists
+        try:
+            existing_company = Company.objects.get(registration_number=registration_number)
+            # If exists, update the existing company (assuming other fields can change)
+            existing_company.name = data.get('name', existing_company.name)
+            existing_company.registration_date = data.get('registration_date', existing_company.registration_date)
+            existing_company.address = data.get('address', existing_company.address)
+            existing_company.contact_person = data.get('contact_person', existing_company.contact_person)
+            existing_company.contact_phone = data.get('contact_phone', existing_company.contact_phone)
+            existing_company.email = data.get('email', existing_company.email)
+            existing_company.save()
+            return JsonResponse({'message': 'Company updated successfully'})
+        except Company.DoesNotExist:
+            # If not exists, create a new company
+            new_company = Company(
+                registration_number=registration_number,
+                name=data.get('name', ''),
+                registration_date=data.get('registration_date', None),
+                address=data.get('address', ''),
+                contact_person=data.get('contact_person', ''),
+                contact_phone=data.get('contact_phone', ''),
+                email=data.get('email', '')
+            )
+            new_company.save()
+            return JsonResponse({'message': 'Company created successfully'})
+
     except Exception as e:
         return HttpResponseBadRequest(str(e))
+
 
 @ensure_csrf_cookie
 @require_http_methods(["GET"])
@@ -354,28 +360,27 @@ class EmployeeHistoryListAPIView(generics.ListAPIView):
         return EmployeeHistory.objects.filter(employee_id=employee_id)
 
 
-class EmployeeDetail(APIView):
-    """
-    Retrieve, update or delete an employee instance.
-    """
-    def get_object(self, pk):
-        try:
-            return Employee.objects.get(pk=pk)
-        except Employee.DoesNotExist:
-            raise Http404("Employee does not exist")
 
-    def get(self, request, pk, format=None):
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from api.models import Employee
+from api.serializers import EmployeeSerializer
+
+class EmployeeDetail(APIView):
+    def get(self, request, employee_id):
         try:
-            employee = self.get_object(pk)
+            employee = Employee.objects.get(employee_id=employee_id)
             serializer = EmployeeSerializer(employee)
             return Response(serializer.data)
-        except Http404 as e:
-            return Response(str(e), status=status.HTTP_404_NOT_FOUND)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request, pk, format=None):
+    def delete(self, request, employee_id):
         try:
-            employee = self.get_object(pk)
+            employee = Employee.objects.get(employee_id=employee_id)
             employee.delete()
             return Response({'message': 'Employee deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        except Http404 as e:
-            return Response(str(e), status=status.HTTP_404_NOT_FOUND)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)

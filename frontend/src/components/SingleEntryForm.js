@@ -12,17 +12,19 @@ const SingleEntryForm = () => {
     end_date: '',
     duties: '',
     company: '',
-    id: null
+    id: null,
   };
 
   const [employeeData, setEmployeeData] = useState(initialEmployeeState);
-  const [csrfToken, setCsrfToken] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/csrf-token/');
-        setCsrfToken(response.data.csrfToken);
+        const csrftoken = response.data.csrfToken;
+        axios.defaults.headers.common['X-CSRFToken'] = csrftoken;
       } catch (error) {
         console.error('Error fetching CSRF token:', error);
       }
@@ -35,7 +37,7 @@ const SingleEntryForm = () => {
     const { name, value } = e.target;
     setEmployeeData({
       ...employeeData,
-      [name]: value || ''
+      [name]: value || '',
     });
   };
 
@@ -57,22 +59,23 @@ const SingleEntryForm = () => {
       );
 
       console.log('Employee added:', response.data);
-      alert('Employee added successfully!');
-
+      setMessage('Employee added successfully!');
+      setError('');
       setEmployeeData({
         ...employeeData,
-        id: response.data.id
+        id: response.data.id,
       });
-
     } catch (error) {
       console.error('Error adding employee:', error.response.data);
-      alert('Error adding employee!');
+      setError('Error adding employee!');
+      setMessage('');
     }
   };
 
   const handleDelete = async () => {
-    if (!employeeData.id) {
-      alert('No employee selected to delete.');
+    if (!employeeData.employee_id) {
+      setError('No employee selected to delete.');
+      setMessage('');
       return;
     }
 
@@ -80,7 +83,7 @@ const SingleEntryForm = () => {
       const csrftoken = getCookie('csrftoken');
 
       const response = await axios.delete(
-        `http://localhost:8000/api/employees/${employeeData.id}/`,
+        `http://localhost:8000/api/employees/${employeeData.employee_id}/`,
         {
           headers: {
             'X-CSRFToken': csrftoken,
@@ -90,17 +93,20 @@ const SingleEntryForm = () => {
       );
 
       console.log('Employee deleted:', response.data);
-      alert('Employee deleted successfully!');
+      setMessage('Employee deleted successfully!');
+      setError('');
       setEmployeeData(initialEmployeeState);
     } catch (error) {
       console.error('Error deleting employee:', error.response.data);
-      alert('Error deleting employee!');
+      setError('Error deleting employee!');
+      setMessage('');
     }
   };
 
   const fetchEmployeeById = async () => {
     if (!employeeData.employee_id) {
-      alert('Please enter an Employee ID.');
+      setError('Please enter an Employee ID.');
+      setMessage('');
       return;
     }
 
@@ -112,12 +118,15 @@ const SingleEntryForm = () => {
       const fetchedEmployee = response.data;
       setEmployeeData({
         ...fetchedEmployee,
-        id: fetchedEmployee.id
+        id: fetchedEmployee.id,
+        employee_id: fetchedEmployee.employee_id, // Ensure employee_id is set correctly
       });
-
+      setMessage('');
+      setError('');
     } catch (error) {
       console.error('Error fetching employee:', error.response.data);
-      alert('Employee with specified ID not found.');
+      setError('Employee with specified ID not found.');
+      setMessage('');
     }
   };
 
@@ -139,22 +148,82 @@ const SingleEntryForm = () => {
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit}>
-        <input type="text" name="name" value={employeeData.name || ''} onChange={handleChange} placeholder="Name" required />
-        <input type="text" name="employee_id" value={employeeData.employee_id || ''} onChange={handleChange} placeholder="Employee ID" required />
-        <input type="number" name="department" value={employeeData.department || ''} onChange={handleChange} placeholder="Department ID" required />
-        <input type="text" name="role" value={employeeData.role || ''} onChange={handleChange} placeholder="Role" required />
-        <input type="date" name="start_date" value={employeeData.start_date || ''} onChange={handleChange} placeholder="Start Date" required />
-        <input type="date" name="end_date" value={employeeData.end_date || ''} onChange={handleChange} placeholder="End Date" />
-        <textarea name="duties" value={employeeData.duties || ''} onChange={handleChange} placeholder="Duties" required></textarea>
-        <input type="text" name="company" value={employeeData.company || ''} onChange={handleChange} placeholder="Company" required />
+        <input
+          type="text"
+          name="name"
+          value={employeeData.name || ''}
+          onChange={handleChange}
+          placeholder="Name"
+          required
+        />
+        <input
+          type="text"
+          name="employee_id"
+          value={employeeData.employee_id || ''}
+          onChange={handleChange}
+          placeholder="Employee ID"
+          required
+        />
+        <input
+          type="number"
+          name="department"
+          value={employeeData.department || ''}
+          onChange={handleChange}
+          placeholder="Department ID"
+          required
+        />
+        <input
+          type="text"
+          name="role"
+          value={employeeData.role || ''}
+          onChange={handleChange}
+          placeholder="Role"
+          required
+        />
+        <input
+          type="date"
+          name="start_date"
+          value={employeeData.start_date || ''}
+          onChange={handleChange}
+          placeholder="Start Date"
+          required
+        />
+        <input
+          type="date"
+          name="end_date"
+          value={employeeData.end_date || ''}
+          onChange={handleChange}
+          placeholder="End Date"
+        />
+        <textarea
+          name="duties"
+          value={employeeData.duties || ''}
+          onChange={handleChange}
+          placeholder="Duties"
+          required
+        ></textarea>
+        <input
+          type="text"
+          name="company"
+          value={employeeData.company || ''}
+          onChange={handleChange}
+          placeholder="Company"
+          required
+        />
         <button type="submit">Add Employee</button>
-        <button type="button" onClick={fetchEmployeeById}>Fetch Employee Data</button>
-        {employeeData.id && (
-          <button type="button" onClick={handleDelete}>Delete Employee</button>
+        <button type="button" onClick={fetchEmployeeById}>
+          Fetch Employee Data
+        </button>
+        {employeeData.employee_id && (
+          <button type="button" onClick={handleDelete}>
+            Delete Employee
+          </button>
         )}
       </form>
+      {message && <div className="success-message">{message}</div>}
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };
-     
+
 export default SingleEntryForm;

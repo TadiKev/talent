@@ -33,9 +33,15 @@ const TalentVerifyUpdateCompanyForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.registration_date) {
+      setError('Registration date cannot be empty');
+      return;
+    }
+    console.log('Submitting data:', formData);
+  
     try {
       const response = await axios.post(
-        'http://localhost:8000/api/save-or-update-company/',
+        'http://localhost:8000/api/save-or-update-company/', // Corrected URL without registration_number in path
         formData,
         { headers: { 'X-CSRFToken': csrfToken }, withCredentials: true }
       );
@@ -49,6 +55,7 @@ const TalentVerifyUpdateCompanyForm = () => {
       setError(error.response?.data?.error || 'Failed to submit company');
     }
   };
+  
 
   const handleFetch = async () => {
     try {
@@ -81,10 +88,19 @@ const TalentVerifyUpdateCompanyForm = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    if (name === 'registration_date') {
+      const formattedDate = new Date(value).toISOString().split('T')[0]; // Ensure correct format
+      setFormData({
+        ...formData,
+        [name]: formattedDate,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   return (
@@ -170,8 +186,8 @@ const TalentVerifyUpdateCompanyForm = () => {
         <button type="button" onClick={handleFetch}>Fetch Company</button>
         <button type="button" onClick={handleDelete}>Delete Company</button>
       </form>
-      {message && <p className="success-message">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {message && <p style={{ color: 'green' }}>{message}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 };

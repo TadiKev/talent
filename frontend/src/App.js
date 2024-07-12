@@ -93,7 +93,17 @@ const App = () => {
 
 const Home = () => (
   <div className="home-content">
-    <h2>Welcome to Talent Verify</h2>
+    <h1 style={{
+    textShadow: '2px 2px 5px rgba(0,0,0,0.3), 4px 4px 10px rgba(0,0,0,0.2), 6px 6px 15px rgba(0,0,0,0.1)',
+    fontSize: '3em',
+    color: '#2E8B57', // SeaGreen
+    textAlign: 'center',
+    marginTop: '20px',
+    fontFamily: "'Arial', sans-serif"
+}}>
+    Welcome to Talent Verify
+</h1>
+
     <p>
       Talent Verify is an online talent verification service designed to streamline the process of verifying 
       employee information for companies. Our platform allows employers to provide comprehensive details 
@@ -105,9 +115,7 @@ const Home = () => (
       information. Keep track of employee history as they progress within the company or move to different 
       companies.
     </p>
-    <p>
-      Use the links below to navigate through the various functionalities of Talent Verify:
-    </p>
+
   </div>
 );
 

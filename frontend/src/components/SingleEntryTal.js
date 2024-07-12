@@ -44,27 +44,30 @@ const SingleEntryForm = () => {
 
 
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-          const csrftoken = getCookie('csrftoken');  // Adjust this function based on your token retrieval method
-  
-          const response = await axios.post(
-              'http://localhost:8000/api/employees/',
-              employeeData,
-              {
-                  headers: {
-                      'X-CSRFToken': csrftoken,
-                      'Content-Type': 'application/json',
-                  },
-                  withCredentials: true,  // Ensure credentials are sent with the request
-              }
-          );
-  
-          console.log('Employee added:', response.data);
-      } catch (error) {
-          console.error('Error adding employee:', error.response.data);
-      }
-  };
+    e.preventDefault();
+    try {
+        const csrftoken = getCookie('csrftoken');  // Adjust this function based on your token retrieval method
+
+        console.log('Submitting Employee Data:', employeeData);  // Add this line
+
+        const response = await axios.post(
+            'http://localhost:8000/api/employees/',
+            employeeData,
+            {
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                },
+                withCredentials: true,  // Ensure credentials are sent with the request
+            }
+        );
+
+        console.log('Employee added:', response.data);
+    } catch (error) {
+        console.error('Error adding employee:', error.response.data);
+    }
+};
+
   
   // Function to get CSRF token from cookies
   function getCookie(name) {

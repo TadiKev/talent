@@ -61,11 +61,21 @@ class Employee(models.Model):
         self.encrypted_duties = encrypt(self.duties)
         super().save(*args, **kwargs)
 
+        EmployeeHistory.objects.create(
+            employee=self,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            role=self.role,
+            duties=self.duties
+        )
+
     def get_duties(self):
         return decrypt(self.encrypted_duties)
 
     def __str__(self):
         return f"{self.name} - {self.department.company.name}"
+    
+
 
 class EmployeeHistory(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='history')
