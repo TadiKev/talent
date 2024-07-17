@@ -2,10 +2,12 @@
 
 from pathlib import Path
 import os
-
+import dj_database_url
+import django_heroku
 
 # Load environment variables from .env file
-
+from dotenv import load_dotenv
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,11 +26,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'api'
+    'api',
+    'whitenoise.runserver_nostatic',  # Whitenoise for static files
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Whitenoise middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -36,9 +40,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    
-    
-    
 ]
 
 ROOT_URLCONF = 'talent_verify.urls'
@@ -67,14 +68,16 @@ WSGI_APPLICATION = 'talent_verify.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'talent_verify_db',
-        'USER': 'talent_verify_user',
-        'PASSWORD': 'Kelvin123@#',
-        'HOST': 'localhost',    # Or your MySQL server address
-        'PORT': '3306',         # MySQL default port
+        'NAME': os.getenv('DB_NAME', 'talent_verify_db'),
+        'USER': os.getenv('DB_USER', 'talent_verify_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Kelvin123@#'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
 
+# Update database configuration with $DATABASE_URL.
+DATABASES['default'].update(dj_database_url.config(conn_max_age=500, ssl_require=True))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -107,16 +110,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-SECRET_KEY = 'c#u#0#-2kjsy=i1f2$dramox(91e3uoy26w4&_1#7-e#iyhd_x'
-
-
-
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -124,7 +124,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-
 
 CORS_ALLOW_HEADERS = [
     'Accept',
@@ -134,11 +133,7 @@ CORS_ALLOW_HEADERS = [
     'X-CSRFToken',  # Ensure CSRF token header is allowed
 ]
 
-# settings.py
-
 CRYPTO_BACKEND = 'django_encrypted_fields.backends.CryptoBackend'
-
-# settings.py
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
@@ -147,3 +142,10 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_HTTPONLY = False
 
 AUTH_USER_MODEL = 'api.CustomUser'
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'build/static')
+]
